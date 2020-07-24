@@ -1,6 +1,9 @@
 package twitter;
 
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Filter consists of methods that filter a list of tweets for those matching a
@@ -24,7 +27,19 @@ public class Filter {
      *         in the same order as in the input list.
      */
     public static List<Tweet> writtenBy(List<Tweet> tweets, String username) {
-        throw new RuntimeException("not implemented");
+        List<Tweet> answer = new ArrayList<Tweet>();
+        
+        // not specified when tweets is empty, do whatever
+        if (tweets.size() == 0) {
+            return answer;
+        }
+        // not specified when user with username does not write a tweet in tweets
+        for (Tweet t: tweets) {
+            if (t.getAuthor().toLowerCase().equals(username.toLowerCase())) {
+                answer.add(t);
+            }
+        }
+        return answer;
     }
 
     /**
@@ -38,7 +53,27 @@ public class Filter {
      *         in the same order as in the input list.
      */
     public static List<Tweet> inTimespan(List<Tweet> tweets, Timespan timespan) {
-        throw new RuntimeException("not implemented");
+        List<Tweet> answer = new ArrayList<Tweet>();
+        
+        // not specified when tweets is empty, do whatever
+        if (tweets.size() == 0) {
+            return answer;
+        }
+        
+        Instant start = timespan.getStart();
+        Instant end   = timespan.getEnd();
+        
+        for (Tweet t: tweets) {
+            Instant ins = t.getTimestamp();
+            if (ins.equals(start) || ins.equals(end)) {
+                answer.add(t);
+            }
+            
+            if (ins.isAfter(start) && ins.isBefore(end)) {
+                answer.add(t);
+            }
+        }
+        return answer;
     }
 
     /**
@@ -57,7 +92,29 @@ public class Filter {
      *         same order as in the input list.
      */
     public static List<Tweet> containing(List<Tweet> tweets, List<String> words) {
-        throw new RuntimeException("not implemented");
+        List<Tweet> answer = new ArrayList<Tweet>();
+        
+        // not specified when tweets is empty, do whatever
+        if (tweets.size() == 0) {
+            return answer;
+        } 
+        
+        List<String> wordsLower = words.stream()
+                                        .map(s -> s.toLowerCase())
+                                        .collect(Collectors.toList());
+        
+        for (Tweet t : tweets) {
+            String [] arr = t.getText().split("(/n| )+");
+            
+            for (int i = 0; i < arr.length; i++) {
+                if (wordsLower.contains(arr[i].toLowerCase())) {
+                    answer.add(t);
+                    break;
+                }
+            }
+        }
+        
+        return answer;
     }
 
     /* Copyright (c) 2007-2016 MIT 6.005 course staff, all rights reserved.

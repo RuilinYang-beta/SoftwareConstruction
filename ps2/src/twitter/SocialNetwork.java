@@ -1,8 +1,14 @@
 package twitter;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 /**
  * SocialNetwork provides methods that operate on a social network.
@@ -38,7 +44,24 @@ public class SocialNetwork {
      *         either authors or @-mentions in the list of tweets.
      */
     public static Map<String, Set<String>> guessFollowsGraph(List<Tweet> tweets) {
-        throw new RuntimeException("not implemented");
+        // not specified how to store username, choose store in lowercase
+        Map<String, Set<String>> ans = new HashMap<String, Set<String>>();
+        
+        for (Tweet t: tweets) {
+            String author = t.getAuthor().toLowerCase();
+            Set<String> mentioned = Extract.getMentionedUsers(Arrays.asList(t)).stream()
+                                                                               .map(s -> s.toLowerCase())
+                                                                               .filter(s -> !s.equals(author))
+                                                                               .collect(Collectors.toSet());
+            if (mentioned.size() > 0) {
+                if (ans.containsKey(author)) {
+                    ans.get(author).addAll(mentioned);
+                } else {
+                    ans.put(author, mentioned);
+                }
+            }
+        }
+        return ans;
     }
 
     /**
@@ -51,7 +74,49 @@ public class SocialNetwork {
      *         descending order of follower count.
      */
     public static List<String> influencers(Map<String, Set<String>> followsGraph) {
-        throw new RuntimeException("not implemented");
+        // idea: 
+        // from followsGraph compute ansMap: username: num_of_ppl_follow_this_user
+        // then sort ansMap by value
+        // then extract the keyset of ansMap
+        
+        // idea2:
+        // first make followsGraph all lowercase
+        // then merge all the value set into a list
+        // then sort the elements in the list by their frequency
+        
+        //
+        // not specified when number of followers has draw
+        Map<String, Set<String>> followsGraphLowered = new HashMap<String, Set<String>>();
+        for (String key : followsGraph.keySet()) {
+            followsGraphLowered.put(key.toLowerCase(), 
+                                    followsGraph.get(key).stream()
+                                                         .map(s -> s.toLowerCase())
+                                                         .collect(Collectors.toSet()));
+        }
+
+        Map<String, Integer> freqMap = new HashMap<String, Integer>();
+        for (Map.Entry<String, Set<String>> e: followsGraphLowered.entrySet()) {
+            Set<String> vals = e.getValue();
+            
+            for (String v : vals) {
+                if (freqMap.containsKey(v)) {
+                    freqMap.put(v, freqMap.get(v)+1);
+                } else { 
+                    freqMap.put(v, 1);
+                }
+            }   
+        }
+        
+        
+        Map<String, Integer> sortedFreqMap = freqMap.entrySet()
+                                                    .stream()
+                                                    .sorted(Map.Entry.comparingByKey())
+                                                    .collect(Collectors.toMap(Map.Entry::getKey, 
+                                                                             Map.Entry::getValue, (oldValue, newValue) -> oldValue, LinkedHashMap::new));
+        
+        
+        return new ArrayList<String>(sortedFreqMap.keySet());
+        
     }
 
     /* Copyright (c) 2007-2016 MIT 6.005 course staff, all rights reserved.

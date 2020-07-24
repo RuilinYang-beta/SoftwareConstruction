@@ -24,7 +24,7 @@ public class ExtractTest {
      * Testing Strategy - Extract.getTimespan(..)
      * 
      * Partitioning the input as follows: 
-     * - tweets.size():               ==2, > 2
+     * - tweets.size():               ==1, ==2, > 2
      * - order of timestamp of tweet: acending, descending, unordered
      * - draw in timestamp:           multiple starting point, multiple mid point, multiple ending point
      * 
@@ -58,7 +58,14 @@ public class ExtractTest {
         assert false; // make sure assertions are enabled with VM argument: -ea
     }
     
-    
+
+    @Test
+    public void testGetTimespanOneTweets() {
+        Timespan timespan = Extract.getTimespan(Arrays.asList(tweet1));
+        
+        assertEquals("expected start", d1, timespan.getStart());
+        assertEquals("expected end", d1, timespan.getEnd());
+    }
 
     @Test
     public void testGetTimespanTwoTweets() {
